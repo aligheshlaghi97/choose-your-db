@@ -292,13 +292,13 @@ def _generate_basic_explanation(db_name: str, score: float, query: str) -> str:
     confidence = "high" if score > 0.7 else "moderate" if score > 0.5 else "low"
 
     explanations = {
-        "PostgreSQL": "PostgreSQL is recommended for its strong ACID compliance, complex query support, and excellent handling of structured data with JSON capabilities.",
-        "MongoDB": "MongoDB is recommended for its flexible schema, horizontal scaling capabilities, and excellent performance with unstructured or semi-structured data.",
-        "Redis": "Redis is recommended for its exceptional speed, in-memory performance, and versatility as a cache, database, and message broker.",
-        "Neo4j": "Neo4j is recommended for its native graph database capabilities, making it perfect for applications with complex relationships between entities.",
-        "Cassandra": "Cassandra is recommended for its linear scalability, high availability, and excellent performance with write-heavy workloads and large datasets.",
-        "HBase": "HBase is recommended for its ability to handle massive amounts of data with predictable access patterns and integration with the Hadoop ecosystem.",
-        "Riak": "Riak is recommended for its high availability, fault tolerance, and operational simplicity in distributed environments.",
+        "PostgreSQL": "PostgreSQL is recommended for its robust ACID compliance, strong SQL standards adherence, and hybrid capabilities handling both relational and JSON data with excellent extensibility.",
+        "HBase": "HBase is recommended for its distributed architecture built on Hadoop, ability to handle billions of rows with real-time read/write access, and excellent scalability for big data workloads.",
+        "MongoDB": "MongoDB is recommended for its flexible document-oriented design, horizontal scaling capabilities, and excellent performance with unstructured or semi-structured data requiring rapid development.",
+        "CouchDB": "CouchDB is recommended for its unique multi-master replication, offline-first capabilities, RESTful HTTP API, and eventual consistency model perfect for distributed collaboration systems.",
+        "Neo4j": "Neo4j is recommended for its native graph database design, efficient relationship traversal using Cypher query language, and excellent performance for applications with complex entity connections.",
+        "DynamoDB": "DynamoDB is recommended for its fully managed AWS service, predictable performance at any scale, high availability across multiple zones, and perfect fit for internet-scale applications.",
+        "Redis": "Redis is recommended for its exceptional in-memory performance, support for multiple data structures, versatility as cache/database/message broker, and sub-millisecond response times.",
     }
 
     base_explanation = explanations.get(
