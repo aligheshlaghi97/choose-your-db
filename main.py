@@ -36,32 +36,69 @@ gemini_configured: bool = False
 # Configuration
 USE_LLM_EXPLANATIONS = os.getenv("USE_LLM_EXPLANATIONS", "true").lower() == "true"
 
-# Sample questions that users would answer
 SAMPLE_QUESTIONS = {
-    "q1": "What type of data are you primarily working with?",
-    "q2": "What are your performance requirements?",
-    "q3": "What is your expected data volume?",
-    "q4": "What consistency guarantees do you need?",
-    "q5": "What is your deployment environment?",
-    "q6": "What is your team's expertise level?",
-    "q7": "What is your budget constraint?",
-    "q8": "What is your time-to-market requirement?",
-    "q9": "What integration requirements do you have?",
-    "q10": "What is your scaling strategy?",
+    "q1": "What is the main type of data you want to store?",
+    "q2": "How important are relationships (connections) between your data?",
+    "q3": "Do you need your database to handle very large scale (terabytes/petabytes) of data?",
+    "q4": "How critical is strong consistency (all users always see the latest data)?",
+    "q5": "How important is high availability (system keeps running even if parts fail)?",
+    "q6": "Do you need flexible or evolving data structures (not fixed schema)?",
+    "q7": "Do you want extremely fast response times (sub-millisecond)?",
+    "q8": "Do you need offline or unreliable-network support with automatic sync later?",
+    "q9": "What are your main use cases?",
 }
 
-# Sample answer choices for each question
 SAMPLE_ANSWERS = {
-    "q1": ["structured", "unstructured", "semi-structured", "graph", "time-series"],
-    "q2": ["high-speed", "moderate", "high-throughput", "real-time", "batch"],
-    "q3": ["small", "medium", "large", "massive", "growing"],
-    "q4": ["strong", "eventual", "weak", "custom", "none"],
-    "q5": ["cloud", "on-premise", "hybrid", "edge", "distributed"],
-    "q6": ["beginner", "intermediate", "expert", "mixed", "consulting"],
-    "q7": ["low", "medium", "high", "enterprise", "open-source"],
-    "q8": ["immediate", "quick", "moderate", "planned", "flexible"],
-    "q9": ["simple", "moderate", "complex", "legacy", "modern"],
-    "q10": ["vertical", "horizontal", "auto", "manual", "hybrid"],
+    "q1": [
+        "Structured (tables, rows, columns)",  # PostgreSQL
+        "Semi-structured (JSON, flexible fields)",  # PostgreSQL, MongoDB, CouchDB, DynamoDB
+        "Graph-like (networks, relationships)",  # Neo4j
+        "Key-value or cache style",  # Redis, DynamoDB
+        "Column-family (huge sparse tables)",  # HBase
+    ],
+    "q2": [
+        "Very important (e.g., social networks, fraud detection)",  # Neo4j
+        "Somewhat important",  # PostgreSQL, MongoDB
+        "Not important",  # Redis, HBase, DynamoDB
+    ],
+    "q3": [
+        "Yes, I expect petabytes of data",  # HBase, DynamoDB
+        "Yes, but more like terabytes",  # PostgreSQL, MongoDB
+        "No, only gigabytes or less",  # Redis, CouchDB, Neo4j
+    ],
+    "q4": [
+        "Must always be consistent (banking, financial apps)",  # PostgreSQL, Neo4j, HBase
+        "Can tolerate some delays (eventual consistency is fine)",  # MongoDB, CouchDB, DynamoDB
+        "Not important for my case",
+    ],
+    "q5": [
+        "Always available is critical (uptime must not drop)",  # DynamoDB, CouchDB
+        "Availability is important, but consistency is more important",  # PostgreSQL, Neo4j, HBase
+        "I don’t really care much",
+    ],
+    "q6": [
+        "Yes, data structures will change often",  # MongoDB, CouchDB, DynamoDB
+        "Somewhat, but mostly structured",  # PostgreSQL
+        "No, fixed schema is fine",  # HBase, Neo4j
+    ],
+    "q7": [
+        "Yes, I need sub-millisecond performance",  # Redis
+        "Fast but not ultra-critical",  # DynamoDB, PostgreSQL
+        "Speed is not my top concern",
+    ],
+    "q8": [
+        "Yes, my users/devices may be offline but should sync later",  # CouchDB
+        "No, always online access is expected",
+    ],
+    "q9": [
+        "Transactional systems (banking, payments)",  # PostgreSQL
+        "Big data logs / time-series / sensors",  # HBase
+        "Web/mobile apps with flexible data",  # MongoDB
+        "Offline-first / sync across devices",  # CouchDB
+        "Social networks / recommendation engines",  # Neo4j
+        "Gaming leaderboards / IoT / high-scale apps",  # DynamoDB
+        "Caching / real-time analytics / sessions",  # Redis
+    ],
 }
 
 
@@ -69,18 +106,17 @@ SAMPLE_ANSWERS = {
 class RecommendationRequest(BaseModel):
     answers: Dict[str, List[str]] = Field(
         ...,
-        description="User answers to the 10 questions",
+        description="User answers to the 9 questions",
         example={
-            "q1": ["structured", "semi-structured"],
-            "q2": ["high-speed"],
-            "q3": ["large"],
-            "q4": ["strong"],
-            "q5": ["cloud"],
-            "q6": ["intermediate"],
-            "q7": ["medium"],
-            "q8": ["quick"],
-            "q9": ["moderate"],
-            "q10": ["horizontal"],
+            "q1": ["Structured (tables, rows, columns)"],
+            "q2": ["Very important (e.g., social networks, fraud detection)"],
+            "q3": ["Yes, but more like terabytes"],
+            "q4": ["Must always be consistent (banking, financial apps)"],
+            "q5": ["Availability is important, but consistency is more important"],
+            "q6": ["Somewhat, but mostly structured"],
+            "q7": ["Fast but not ultra-critical"],
+            "q8": ["No, always online access is expected"],
+            "q9": ["Transactional systems (banking, payments)"],
         },
     )
 
@@ -150,6 +186,24 @@ async def get_questions():
     }
 
 
+def adjust_scores(db_scores, user_answers):
+    # strong signal from q1
+    if "Graph-like (networks, relationships)" in user_answers.get("q1"):
+        db_scores["Neo4j"] += 0.10
+
+    # latency preference
+    if "Yes, I need sub-millisecond performance" in user_answers.get("q7"):
+        db_scores["Redis"] += 0.10
+
+    # offline sync
+    if "Yes, my users/devices may be offline but should sync later" in user_answers.get(
+        "q8"
+    ):
+        db_scores["CouchDB"] += 0.10
+
+    return db_scores
+
+
 @app.post("/recommend", response_model=RecommendationResponse)
 async def recommend_database(request: RecommendationRequest):
     """
@@ -173,24 +227,42 @@ async def recommend_database(request: RecommendationRequest):
         search_results = qdrant_client.search(
             collection_name="databases",
             query_vector=query_embedding,
-            limit=3,  # Return top 3 recommendations
+            limit=7,  # Get more results to allow for score adjustments
             with_payload=True,
         )
 
+        # Apply custom score adjustments based on user answers
+        db_scores = {}
+        for result in search_results:
+            db_scores[result.payload["name"]] = result.score
+
+        # Adjust scores based on specific user answers
+        adjusted_scores = adjust_scores(db_scores, request.answers)
+
+        # Sort by adjusted scores and take top 3
+        sorted_databases = sorted(
+            adjusted_scores.items(), key=lambda x: x[1], reverse=True
+        )[:3]
+
         # Format recommendations
         recommendations = []
-        for result in search_results:
+        for db_name, adjusted_score in sorted_databases:
+            # Find the original search result for this database
+            original_result = next(
+                r for r in search_results if r.payload["name"] == db_name
+            )
+
             # Generate explanation (LLM if enabled, fallback to basic explanation)
             explanation = await _generate_explanation(
-                result.payload["name"],
-                result.score,
+                db_name,
+                adjusted_score,  # Use adjusted score for explanation
                 query_text,
-                result.payload["description"],
+                original_result.payload["description"],
             )
 
             recommendation = DatabaseRecommendation(
-                name=result.payload["name"],
-                score=result.score,
+                name=db_name,
+                score=adjusted_score,  # Use adjusted score
                 explanation=explanation,
             )
             recommendations.append(recommendation)
@@ -322,15 +394,14 @@ def _build_query_from_answers(answers: Dict[str, List[str]]) -> str:
     # Map question IDs to meaningful descriptions
     question_mapping = {
         "q1": "data type",
-        "q2": "performance requirements",
-        "q3": "data volume",
-        "q4": "consistency needs",
-        "q5": "deployment environment",
-        "q6": "expertise level",
-        "q7": "budget constraints",
-        "q8": "time requirements",
-        "q9": "integration needs",
-        "q10": "scaling approach",
+        "q2": "relationship importance",
+        "q3": "data scale",
+        "q4": "consistency requirements",
+        "q5": "availability vs consistency priority",
+        "q6": "schema flexibility needs",
+        "q7": "performance requirements",
+        "q8": "offline support needs",
+        "q9": "use case",
     }
 
     for q_id, answer_list in answers.items():
