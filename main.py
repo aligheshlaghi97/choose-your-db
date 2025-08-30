@@ -29,7 +29,7 @@ app = FastAPI(
 )
 origins = [
     "http://localhost:3000",
-    "https://aligheshlaghi97.github.io/choose-your-db-frontend/",
+    "https://aligheshlaghi97.github.io",
 ]
 
 app.add_middleware(
