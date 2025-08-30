@@ -6,16 +6,17 @@ by matching their requirements against a vector database of database description
 """
 
 import os
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from typing import Dict, List, Any, Optional
-from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams
+from typing import Dict, List
+
 import google.generativeai as genai
 import uvicorn
 from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from qdrant_client import QdrantClient
 
-from db_loader import load_databases_to_qdrant, configure_gemini
+from db_loader import configure_gemini, load_databases_to_qdrant
 
 # Load environment variables
 load_dotenv()
@@ -25,6 +26,15 @@ app = FastAPI(
     title="Database Recommendation API",
     description="AI-powered database recommendation system using vector search with Google Gemini embeddings",
     version="0.0.1",
+)
+origins = ["http://localhost:3000", "https://yourfrontenddomain.com"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # which origins can call your API
+    allow_credentials=True,
+    allow_methods=["*"],  # allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # allow all headers
 )
 
 # Initialize Qdrant client (in-memory)
@@ -326,16 +336,16 @@ async def _generate_explanation(
 
         prompt = f"""
         You are a database expert helping explain why a specific database was recommended.
-        
+
         Database: {db_name}
         Database Description: {db_description}
         User Requirements: {query}
         Similarity Score: {score:.3f}
-        
-        Generate a concise, professional explanation (2-3 sentences) explaining why this database 
-        is a good match for the user's requirements. Focus on specific strengths and capabilities 
+
+        Generate a concise, professional explanation (2-3 sentences) explaining why this database
+        is a good match for the user's requirements. Focus on specific strengths and capabilities
         that align with their needs. Include the confidence level based on the similarity score.
-        
+
         Format: Start with the database name, then explain the recommendation, end with confidence level.
         """
 
