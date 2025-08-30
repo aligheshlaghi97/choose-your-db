@@ -27,7 +27,10 @@ app = FastAPI(
     description="AI-powered database recommendation system using vector search with Google Gemini embeddings",
     version="0.0.1",
 )
-origins = ["http://localhost:3000", "https://yourfrontenddomain.com"]
+origins = [
+    "http://localhost:3000",
+    "https://aligheshlaghi97.github.io/choose-your-db-frontend/",
+]
 
 app.add_middleware(
     CORSMiddleware,
