@@ -59,6 +59,7 @@ SAMPLE_QUESTIONS = {
     "q7": "Do you want extremely fast response times (sub-millisecond)?",
     "q8": "Do you need offline or unreliable-network support with automatic sync later?",
     "q9": "What are your main use cases?",
+    "q10": "Anything else you want to include that's missing in the 9 questions above? (free text)",
 }
 
 SAMPLE_ANSWERS = {
@@ -112,6 +113,7 @@ SAMPLE_ANSWERS = {
         "Gaming leaderboards / IoT / high-scale apps",  # DynamoDB
         "Caching / real-time analytics / sessions",  # Redis
     ],
+    "q10": [],
 }
 
 
@@ -119,7 +121,7 @@ SAMPLE_ANSWERS = {
 class RecommendationRequest(BaseModel):
     answers: Dict[str, List[str]] = Field(
         ...,
-        description="User answers to the 9 questions",
+        description="User answers to the 10 questions",
         example={
             "q1": ["Structured (tables, rows, columns)"],
             "q2": ["Very important (e.g., social networks, fraud detection)"],
@@ -130,6 +132,7 @@ class RecommendationRequest(BaseModel):
             "q7": ["Fast but not ultra-critical"],
             "q8": ["No, always online access is expected"],
             "q9": ["Transactional systems (banking, payments)"],
+            "q10": ["I want to handle very huge data but not sure how much is that"],
         },
     )
 
@@ -195,7 +198,7 @@ async def get_questions():
     return {
         "questions": SAMPLE_QUESTIONS,
         "answer_choices": SAMPLE_ANSWERS,
-        "description": "Answer these questions to get personalized database recommendations",
+        "description": "Answer these questions to get personalized database recommendations. Question 10 is for free-text input.",
     }
 
 
@@ -415,6 +418,7 @@ def _build_query_from_answers(answers: Dict[str, List[str]]) -> str:
         "q7": "performance requirements",
         "q8": "offline support needs",
         "q9": "use case",
+        "q10": "additional requirements",
     }
 
     for q_id, answer_list in answers.items():
