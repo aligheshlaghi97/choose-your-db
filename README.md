@@ -19,7 +19,7 @@ This application helps users find the best database for their needs by matching 
 ## 🚀 Features
 
 - **Smart Recommendations**: Uses Google Gemini embeddings and vector search to find the most similar database descriptions
-- **10 Question Assessment**: Comprehensive questionnaire covering data type, performance, volume, consistency, deployment, expertise, budget, timeline, integration, and scaling
+- **10 Question Assessment**: Comprehensive questionnaire covering data type, performance, volume, consistency, deployment, expertise, budget, timeline, integration, scaling, and additional requirements
 - **Top 3 Recommendations**: Returns ranked database suggestions with explanations
 - **AI-Powered Explanations**: Optional Gemini-1.5-flash integration for polished, human-readable explanations
 - **Fallback Support**: Graceful degradation to template-based explanations if LLM fails
@@ -99,7 +99,8 @@ curl -X POST http://localhost:8000/recommend \
       "q6": ["No, fixed schema is fine"],
       "q7": ["Speed is not my top concern"],
       "q8": ["No, always online access is expected"],
-      "q9": ["Big data logs / time-series / sensors"]
+      "q9": ["Big data logs / time-series / sensors"],
+      "q10": ["No, the 9 questions above cover everything I need"]
     }
   }'
 ```
@@ -148,7 +149,7 @@ This will test all endpoints and show different recommendation scenarios.
 
 ### Questions and Answers
 
-The 9 questions cover:
+The 10 questions cover:
 1. **Data Type**: What is the main type of data you want to store?
 2. **Relationships**: How important are relationships (connections) between your data?
 3. **Scale**: Do you need your database to handle very large scale (terabytes/petabytes) of data?
@@ -158,6 +159,7 @@ The 9 questions cover:
 7. **Performance**: Do you want extremely fast response times (sub-millisecond)?
 8. **Offline Support**: Do you need offline or unreliable-network support with automatic sync later?
 9. **Use Cases**: What are your main use cases?
+10. **Additional Requirements**: Is there anything else you want to include that's missing in the 9 questions above?
 
 ### Database Descriptions
 

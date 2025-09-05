@@ -82,6 +82,7 @@ def test_recommendation_endpoint():
             "q7": ["Fast but not ultra-critical"],
             "q8": ["No, always online access is expected"],
             "q9": ["Transactional systems (banking, payments)"],
+            "q10": ["I want to handle very huge data but not sure how much is that"],
         },
     }
 
@@ -128,6 +129,7 @@ def test_different_scenarios():
                 "q7": ["Yes, I need sub-millisecond performance"],
                 "q8": ["No, always online access is expected"],
                 "q9": ["Caching / real-time analytics / sessions"],
+                "q10": ["Need real-time data processing capabilities"],
             },
         },
         {
@@ -142,6 +144,7 @@ def test_different_scenarios():
                 "q7": ["Fast but not ultra-critical"],
                 "q8": ["No, always online access is expected"],
                 "q9": ["Social networks / recommendation engines"],
+                "q10": ["Must be open source and have a strong community"],
             },
         },
         {
@@ -156,6 +159,7 @@ def test_different_scenarios():
                 "q7": ["Fast but not ultra-critical"],
                 "q8": ["No, always online access is expected"],
                 "q9": ["Gaming leaderboards / IoT / high-scale apps"],
+                "q10": ["Need geographic distribution across regions"],
             },
         },
         {
@@ -170,6 +174,7 @@ def test_different_scenarios():
                 "q7": ["Speed is not my top concern"],
                 "q8": ["No, always online access is expected"],
                 "q9": ["Big data logs / time-series / sensors"],
+                "q10": ["Want to minimize operational overhead"],
             },
         },
     ]
@@ -199,6 +204,70 @@ def test_different_scenarios():
 
         except Exception as e:
             print(f"Error: {e}")
+
+
+def test_q10_free_text():
+    """Test q10 free-text functionality with various inputs."""
+    print("=== Testing Q10 Free-Text Functionality ===")
+    
+    test_cases = [
+        {
+            "name": "Huge Data Scale Question",
+            "q10_text": "I want to handle very huge data but not sure how much is that"
+        },
+        {
+            "name": "Custom Business Requirements",
+            "q10_text": "Need to integrate with our existing microservices architecture and support real-time data streaming"
+        },
+        {
+            "name": "Cost and Performance Balance",
+            "q10_text": "Looking for a cost-effective solution that can scale from startup to enterprise level"
+        },
+        {
+            "name": "Security and Compliance",
+            "q10_text": "Must comply with GDPR and SOC2 requirements with built-in encryption at rest"
+        }
+    ]
+    
+    # Base answers for all test cases
+    base_answers = {
+        "q1": ["Semi-structured (JSON, flexible fields)"],
+        "q2": ["Somewhat important"],
+        "q3": ["Yes, but more like terabytes"],
+        "q4": ["Can tolerate some delays (eventual consistency is fine)"],
+        "q5": ["Availability is important, but consistency is more important"],
+        "q6": ["Yes, data structures will change often"],
+        "q7": ["Fast but not ultra-critical"],
+        "q8": ["No, always online access is expected"],
+        "q9": ["Web/mobile apps with flexible data"],
+    }
+    
+    for test_case in test_cases:
+        print(f"\n--- {test_case['name']} ---")
+        print(f"Q10 Input: {test_case['q10_text']}")
+        
+        # Add q10 to base answers
+        test_answers = base_answers.copy()
+        test_answers["q10"] = [test_case["q10_text"]]
+        
+        try:
+            response = requests.post(
+                f"{BASE_URL}/recommend",
+                json={"answers": test_answers},
+                headers={"Content-Type": "application/json"},
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"Query includes Q10: {'additional requirements' in data['query_summary']}")
+                print(f"Top recommendation: {data['recommendations'][0]['name']} (score: {data['recommendations'][0]['score']:.3f})")
+            else:
+                print(f"Error: {response.status_code}")
+                
+        except Exception as e:
+            print(f"Error: {e}")
+    
+    print()
 
 
 def test_error_handling():
@@ -245,6 +314,7 @@ if __name__ == "__main__":
     test_questions_endpoint()
     test_recommendation_endpoint()
     test_different_scenarios()
+    test_q10_free_text()
     test_error_handling()
 
     print("\nTest completed!")
@@ -256,7 +326,7 @@ if __name__ == "__main__":
     print("4. Or test manually with curl:")
     print("   curl -X POST http://localhost:8000/recommend \\")
     print("        -H 'Content-Type: application/json' \\")
-    print('        -d \'{"answers": {"q1": ["structured"], "q2": ["high-speed"]}}\'')
+    print('        -d \'{"answers": {"q1": ["structured"], "q2": ["high-speed"], "q10": ["custom requirements"]}}\'')
     print()
     print("Note: The API requires a valid Google Gemini API key to function.")
     print("Get your API key from: https://makersuite.google.com/app/apikey")
