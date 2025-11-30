@@ -181,7 +181,7 @@ async def root():
         "message": "Database Recommendation API",
         "version": "0.0.1",
         "features": {
-            "vector_search": "Google Gemini embedding-001",
+            "vector_search": "Google Gemini gemini-embedding-001",
             "llm_explanations": USE_LLM_EXPLANATIONS,
             "llm_model": "gemini-1.5-flash" if USE_LLM_EXPLANATIONS else "disabled",
         },
@@ -307,7 +307,11 @@ def _get_embedding_safe(text: str) -> List[float]:
         HTTPException: If embedding generation fails
     """
     try:
-        embedding = genai.embed_content(model="models/embedding-001", content=text)
+        embedding = genai.embed_content(
+            model="models/gemini-embedding-001",
+            content=text,
+            task_type="retrieval_document",
+        )
         return embedding["embedding"]
     except Exception as e:
         raise HTTPException(

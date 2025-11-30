@@ -6,13 +6,13 @@ An AI-powered FastAPI backend that recommends databases from "7 Databases in 7 W
 
 ## 🎯 Goal
 
-This application helps users find the best database for their needs by matching their requirements against a knowledge base of database descriptions using Google's Gemini embedding-001 model and vector search with Qdrant.
+This application helps users find the best database for their needs by matching their requirements against a knowledge base of database descriptions using Google's Gemini gemini-embedding-001 model and vector search with Qdrant.
 
 ## 🏗️ Architecture
 
 - **Backend Framework**: FastAPI
 - **Vector Database**: Qdrant (in-memory setup)
-- **Embeddings**: Google Gemini `models/embedding-001`
+- **Embeddings**: Google Gemini `models/gemini-embedding-001`
 - **Optional LLM**: Gemini-1.5-flash for polished explanations
 - **Lightweight**: Designed for 1 vCPU, 1 GB RAM VMs (so few concurrent users expected)
 

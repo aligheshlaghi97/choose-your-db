@@ -80,8 +80,8 @@ def create_qdrant_collection(client: QdrantClient, collection_name: str = "datab
         client.create_collection(
             collection_name=collection_name,
             vectors_config=VectorParams(
-                size=768, distance=Distance.COSINE
-            ),  # Gemini embedding-001 size
+                size=3072, distance=Distance.COSINE
+            ),  # gemini-embedding-001 default dimension is 3072
         )
         print(f"Created collection: {collection_name}")
     except Exception as e:
@@ -108,7 +108,7 @@ def configure_gemini():
 
 def get_embedding(text: str) -> list:
     """
-    Get embedding for text using Google Gemini's embedding-001 model.
+    Get embedding for text using Google Gemini's gemini-embedding-001 model.
 
     Args:
         text: Text to embed
@@ -117,7 +117,11 @@ def get_embedding(text: str) -> list:
         List of floats representing the embedding vector
     """
     try:
-        embedding = genai.embed_content(model="models/embedding-001", content=text)
+        embedding = genai.embed_content(
+            model="models/gemini-embedding-001",
+            content=text,
+            task_type="retrieval_document",
+        )
         return embedding["embedding"]
     except Exception as e:
         print(f"Error getting embedding: {e}")
